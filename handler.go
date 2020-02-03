@@ -6,6 +6,11 @@ import (
 	"io"
 )
 
+// DeviceExitHandler - this is called when bluetooth device exits accidentially
+type DeviceExitHandler interface {
+	deviceExit(err error)
+}
+
 // A ReadHandler handles GATT requests.
 type ReadHandler interface {
 	ServeRead(req Request, rsp ResponseWriter)

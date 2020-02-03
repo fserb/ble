@@ -9,10 +9,10 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/go-ble/ble"
-	"github.com/go-ble/ble/examples/lib"
-	"github.com/go-ble/ble/examples/lib/dev"
-	"github.com/go-ble/ble/linux"
+	"github.com/melvinto/ble"
+	"github.com/melvinto/ble/examples/lib"
+	"github.com/melvinto/ble/examples/lib/dev"
+	"github.com/melvinto/ble/linux"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )

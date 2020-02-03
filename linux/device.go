@@ -5,10 +5,10 @@ import (
 	"io"
 	"log"
 
-	"github.com/go-ble/ble"
-	"github.com/go-ble/ble/linux/att"
-	"github.com/go-ble/ble/linux/gatt"
-	"github.com/go-ble/ble/linux/hci"
+	"github.com/melvinto/ble/linux/att"
+	"github.com/melvinto/ble/linux/gatt"
+	"github.com/melvinto/ble/linux/hci"
+	"github.com/melvinto/ble"
 	"github.com/pkg/errors"
 )
 
@@ -80,8 +80,9 @@ func loop(dev *hci.HCI, s *gatt.Server, mtu int) {
 
 // Device ...
 type Device struct {
-	HCI    *hci.HCI
-	Server *gatt.Server
+	HCI         *hci.HCI
+	Server      *gatt.Server
+	exitHandler DeviceExitHandler
 }
 
 // AddService adds a service to database.
