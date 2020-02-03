@@ -6,9 +6,9 @@ import (
 	"io"
 )
 
-// DeviceExitHandler - this is called when bluetooth device exits accidentially
-type DeviceExitHandler interface {
-	deviceExit(err error)
+// DeviceEventHandler - this is called when bluetooth device exits accidentially
+type DeviceEventHandler interface {
+	DeviceExit(err error)
 }
 
 // A ReadHandler handles GATT requests.

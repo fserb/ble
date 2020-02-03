@@ -5,10 +5,10 @@ import (
 	"io"
 	"log"
 
+	"github.com/melvinto/ble"
 	"github.com/melvinto/ble/linux/att"
 	"github.com/melvinto/ble/linux/gatt"
 	"github.com/melvinto/ble/linux/hci"
-	"github.com/melvinto/ble"
 	"github.com/pkg/errors"
 )
 
@@ -45,12 +45,15 @@ func NewDeviceWithNameAndHandler(name string, handler ble.NotifyHandler, opts ..
 		return nil, errors.Wrapf(err, "maximum ATT_MTU is %d", ble.MaxMTU)
 	}
 
-	go loop(dev, srv, mtu)
+	device := Device{HCI: dev, Server: srv}
+	go loop(&device, srv, mtu)
 
-	return &Device{HCI: dev, Server: srv}, nil
+	return &device, nil
 }
 
-func loop(dev *hci.HCI, s *gatt.Server, mtu int) {
+func loop(device *Device, s *gatt.Server, mtu int) {
+	dev := device.HCI
+
 	for {
 		l2c, err := dev.Accept()
 		if err != nil {
@@ -58,6 +61,9 @@ func loop(dev *hci.HCI, s *gatt.Server, mtu int) {
 			// the read.  Don't report this as an error.
 			if err != io.EOF {
 				log.Printf("can't accept: %s", err)
+				if device.eventHandler != nil {
+					device.eventHandler.DeviceExit(err)
+				}
 			}
 			return
 		}
@@ -80,9 +86,9 @@ func loop(dev *hci.HCI, s *gatt.Server, mtu int) {
 
 // Device ...
 type Device struct {
-	HCI         *hci.HCI
-	Server      *gatt.Server
-	exitHandler DeviceExitHandler
+	HCI          *hci.HCI
+	Server       *gatt.Server
+	eventHandler ble.DeviceEventHandler
 }
 
 // AddService adds a service to database.
@@ -192,4 +198,9 @@ func (d *Device) Dial(ctx context.Context, a ble.Addr) (ble.Client, error) {
 // Address returns the listener's device address.
 func (d *Device) Address() ble.Addr {
 	return d.HCI.Addr()
+}
+
+// SetDeviceEventHandler - set handler
+func (d *Device) SetDeviceEventHandler(handler ble.DeviceEventHandler) {
+	d.eventHandler = handler
 }
