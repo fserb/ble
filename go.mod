@@ -3,7 +3,6 @@ module github.com/melvinto/ble
 go 1.13
 
 require (
-	github.com/melvinto/ble v0.1.0
 	github.com/mgutz/logxi v0.0.0-20161027140823-aebf8a7d67ab
 	github.com/pkg/errors v0.8.1
 	github.com/raff/goble v0.0.0-20190909174656-72afc67d6a99
