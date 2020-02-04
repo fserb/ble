@@ -1,6 +1,8 @@
 package ble
 
-import "context"
+import (
+	"context"
+)
 
 // Device ...
 type Device interface {
@@ -42,4 +44,6 @@ type Device interface {
 
 	// Dial ...
 	Dial(ctx context.Context, a Addr) (Client, error)
+
+	Address() Addr
 }
