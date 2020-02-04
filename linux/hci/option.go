@@ -2,8 +2,9 @@ package hci
 
 import (
 	"errors"
-	"github.com/melvinto/ble/linux/hci/evt"
 	"time"
+
+	"github.com/melvinto/ble/linux/hci/evt"
 
 	"github.com/melvinto/ble/linux/hci/cmd"
 )
@@ -35,6 +36,11 @@ func (h *HCI) SetConnParams(param cmd.LECreateConnection) error {
 // SetScanParams overrides default scanning parameters.
 func (h *HCI) SetScanParams(param cmd.LESetScanParameters) error {
 	h.params.scanParams = param
+	return nil
+}
+
+func (h *HCI) SetExitHandler(f func(error)) error {
+	h.exitHandler = f
 	return nil
 }
 

@@ -111,6 +111,8 @@ type HCI struct {
 	chMasterConn chan *Conn // Dial returns master connections.
 	chSlaveConn  chan *Conn // Peripheral accept slave connections.
 
+	exitHandler func(error)
+
 	connectedHandler    func(evt.LEConnectionComplete)
 	disconnectedHandler func(evt.DisconnectionComplete)
 
@@ -302,6 +304,9 @@ func (h *HCI) sktLoop() {
 			if err == io.EOF {
 				h.err = err //callers depend on detecting io.EOF, don't wrap it.
 			} else {
+				if h.exitHandler != nil {
+					h.exitHandler(err)
+				}
 				h.err = fmt.Errorf("skt: %s", err)
 			}
 			return
