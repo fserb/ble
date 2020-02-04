@@ -61,9 +61,6 @@ func loop(device *Device, s *gatt.Server, mtu int) {
 			// the read.  Don't report this as an error.
 			if err != io.EOF {
 				log.Printf("can't accept: %s", err)
-				if device.eventHandler != nil {
-					device.eventHandler.DeviceExit(err)
-				}
 			}
 			return
 		}
