@@ -42,6 +42,4 @@ type Device interface {
 
 	// Dial ...
 	Dial(ctx context.Context, a Addr) (Client, error)
-
-	SetDeviceEventHandler(handler DeviceEventHandler)
 }

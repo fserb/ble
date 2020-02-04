@@ -86,9 +86,8 @@ func loop(device *Device, s *gatt.Server, mtu int) {
 
 // Device ...
 type Device struct {
-	HCI          *hci.HCI
-	Server       *gatt.Server
-	eventHandler ble.DeviceEventHandler
+	HCI    *hci.HCI
+	Server *gatt.Server
 }
 
 // AddService adds a service to database.
@@ -198,9 +197,4 @@ func (d *Device) Dial(ctx context.Context, a ble.Addr) (ble.Client, error) {
 // Address returns the listener's device address.
 func (d *Device) Address() ble.Addr {
 	return d.HCI.Addr()
-}
-
-// SetDeviceEventHandler - set handler
-func (d *Device) SetDeviceEventHandler(handler ble.DeviceEventHandler) {
-	d.eventHandler = handler
 }
