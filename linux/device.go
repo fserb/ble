@@ -192,6 +192,11 @@ func (d *Device) Dial(ctx context.Context, a ble.Addr) (ble.Client, error) {
 }
 
 // Address returns the listener's device address.
-func (d *Device) Address() ble.Addr {
-	return d.HCI.Addr()
+func (d *Device) Address() *ble.Addr {
+	if d.HCI != nil {
+		addr := d.HCI.Addr()
+		return &addr
+	}
+
+	return nil
 }
