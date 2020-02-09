@@ -83,6 +83,9 @@ func NewSocket(id int) (*Socket, error) {
 		}
 		msg = msg + fmt.Sprintf("(hci%d: %s)", id, err)
 	}
+
+	defer unix.Close(fd)
+
 	return nil, errors.Errorf("no devices available: %s", msg)
 }
 

@@ -308,6 +308,7 @@ func (h *HCI) sktLoop() {
 					h.exitHandler(err)
 				}
 				h.err = fmt.Errorf("skt: %s", err)
+				h.close(h.err)
 			}
 			return
 		}
