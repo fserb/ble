@@ -66,7 +66,7 @@ type Conn struct {
 }
 
 func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
-	p := NewPool(1+4+h.bufSize, h.bufCnt-1)
+	p := NewPool(1+4+h.bufSize, h.bufCnt-1) // same as NewPool in hci.go
 
 	c := &Conn{
 		hci:   h,
