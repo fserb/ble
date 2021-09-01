@@ -66,6 +66,8 @@ type Conn struct {
 }
 
 func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
+	p := NewPool(1+4+h.bufSize, h.bufCnt-1)
+
 	c := &Conn{
 		hci:   h,
 		ctx:   context.Background(),
@@ -82,7 +84,8 @@ func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
 		chInPkt: make(chan packet, 16),
 		chInPDU: make(chan pdu, 16),
 
-		txBuffer: NewClient(h.pool),
+		txBuffer: NewClient(p),
+		//txBuffer: NewClient(h.pool),
 
 		chDone: make(chan struct{}),
 	}
