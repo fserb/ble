@@ -10,6 +10,7 @@ import (
 	"time"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/melvinto/ble"
 	"github.com/melvinto/ble/linux/hci/cmd"
@@ -98,6 +99,11 @@ func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
 		lastActive: time.Now().Unix(),
 	}
 
+	/*
+	fmt.Printf("Connection from % X\n", param.PeerAddress())
+	fmt.Printf("local mac %v\n", c.LocalAddr().String())
+  */
+
 	go func() {
 		timeoutStr := os.Getenv("BLE_IDLE_TIMEOUT")
 		if timeoutStr == "" {
@@ -114,17 +120,24 @@ func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
 			fmt.Println("Warning, BLE_IDLE_TIMEOUT may be too small:", timeout)
 		}
 
+		forloop:
 		for {
-			time.Sleep(time.Duration(3) * time.Second)
-			diff := time.Now().Unix() - c.lastActive
-			if diff > int64(timeout) {
-				fmt.Printf("Connection from %v has been idle for %v seconds, disconnecting...\n", c.RemoteAddr().String(), diff)
+			select {
+			case <- time.After(time.Duration(3) * time.Second):
+				diff := time.Now().Unix() - c.lastActive
+				if diff > int64(timeout) {
+					addr := strings.ToUpper(c.RemoteAddr().String())
+					fmt.Printf("Connection from %v has been idle for %v seconds, disconnecting...\n", addr, diff)
 
-				if err := c.Close(); err != nil {
-					fmt.Println("Got error when closing connection:", c.RemoteAddr().String())
+					if err := c.Close(); err != nil {
+						fmt.Println("Got error when closing connection:", addr)
+					}
+
+					break forloop
 				}
-
-				break
+			case <-c.chDone:
+			//case <- c.Disconnected():
+				break forloop
 			}
 		}
 	}()

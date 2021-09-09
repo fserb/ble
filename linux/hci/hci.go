@@ -457,7 +457,8 @@ func (h *HCI) handleCommandComplete(b []byte) error {
 	p, found := h.sent[int(e.CommandOpcode())]
 	h.muSent.Unlock()
 	if !found {
-		return fmt.Errorf("can't find the cmd for CommandCompleteEP: % X", e)
+		return nil
+		//return fmt.Errorf("can't find the cmd for CommandCompleteEP: % X", e)
 	}
 	p.done <- e.ReturnParameters()
 	return nil
@@ -548,8 +549,10 @@ func (h *HCI) handleDisconnectionComplete(b []byte) error {
 		h.params.RUnlock()
 	} else {
 		// remote peripheral disconnected
-		close(c.chDone)
 	}
+	// Possible BUG, chDone should be closed no matter it's slave or not
+	close(c.chDone)
+
 	// When a connection disconnects, all the sent packets and weren't acked yet
 	// will be recycled. [Vol2, Part E 4.1.1]
 	//
