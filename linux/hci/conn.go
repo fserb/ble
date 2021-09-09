@@ -7,6 +7,10 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"time"
+	"os"
+	"strconv"
+	"strings"
 
 	"github.com/melvinto/ble"
 	"github.com/melvinto/ble/linux/hci/cmd"
@@ -63,6 +67,9 @@ type Conn struct {
 
 	// leFrame is set to be true when the LE Credit based flow control is used.
 	leFrame bool
+
+	// used to kill long idle connection
+	lastActive int64
 }
 
 func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
@@ -88,7 +95,51 @@ func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
 		//txBuffer: NewClient(h.pool),
 
 		chDone: make(chan struct{}),
+
+		lastActive: time.Now().Unix(),
 	}
+
+	/*
+	fmt.Printf("Connection from % X\n", param.PeerAddress())
+	fmt.Printf("local mac %v\n", c.LocalAddr().String())
+  */
+
+	go func() {
+		timeoutStr := os.Getenv("BLE_IDLE_TIMEOUT")
+		if timeoutStr == "" {
+			return
+		}
+
+		timeout, err := strconv.Atoi(timeoutStr)
+		if err != nil {
+			fmt.Println("Invalid BLE_IDLE_TIMEOUT:", timeoutStr)
+			return
+		}
+
+		if timeout < 10 {
+			fmt.Println("Warning, BLE_IDLE_TIMEOUT may be too small:", timeout)
+		}
+
+		forloop:
+		for {
+			select {
+			case <- time.After(time.Duration(3) * time.Second):
+				diff := time.Now().Unix() - c.lastActive
+				if diff > int64(timeout) {
+					addr := strings.ToUpper(c.RemoteAddr().String())
+					fmt.Printf("Connection from %v has been idle for %v seconds, disconnecting...\n", addr, diff)
+
+					if err := c.Close(); err != nil {
+						fmt.Println("Got error when closing connection:", addr)
+					}
+
+					break forloop
+				}
+			case <- c.Disconnected():
+				break forloop
+			}
+		}
+	}()
 
 	go func() {
 		for {
@@ -118,6 +169,8 @@ func (c *Conn) SetContext(ctx context.Context) {
 
 // Read copies re-assembled L2CAP PDUs into sdu.
 func (c *Conn) Read(sdu []byte) (n int, err error) {
+	c.lastActive = time.Now().Unix()
+	
 	p, ok := <-c.chInPDU
 	if !ok {
 		return 0, errors.Wrap(io.ErrClosedPipe, "input channel closed")
@@ -189,6 +242,8 @@ func (c *Conn) Write(sdu []byte) (int, error) {
 
 // writePDU breaks down a L2CAP PDU into fragments if it's larger than the HCI buffer size. [Vol 3, Part A, 7.2.1]
 func (c *Conn) writePDU(pdu []byte) (int, error) {
+	c.lastActive = time.Now().Unix()
+
 	sent := 0
 	flags := uint16(pbfHostToControllerStart << 4) // ACL boundary flags
 
