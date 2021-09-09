@@ -135,8 +135,7 @@ func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
 
 					break forloop
 				}
-			case <-c.chDone:
-			//case <- c.Disconnected():
+			case <- c.Disconnected():
 				break forloop
 			}
 		}

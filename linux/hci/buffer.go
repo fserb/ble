@@ -55,7 +55,7 @@ func (c *Client) Get() *bytes.Buffer {
 		return b
 	case <- time.After(time.Duration(5) * time.Second):
 		fmt.Println("Warning: txBuffer pool empty!!", len(c.p.ch))
-	  b := <-c.p.ch
+		b := <-c.p.ch
 		b.Reset()
 		c.sent <- b
 		return b
