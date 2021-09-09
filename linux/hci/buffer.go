@@ -3,6 +3,8 @@ package hci
 import (
 	"bytes"
 	"sync"
+	"fmt"
+	"time"
 )
 
 // Pool ...
@@ -46,10 +48,18 @@ func (c *Client) UnlockPool() {
 
 // Get returns a buffer from the shared buffer pool.
 func (c *Client) Get() *bytes.Buffer {
-	b := <-c.p.ch
-	b.Reset()
-	c.sent <- b
-	return b
+	select {
+	case b := <-c.p.ch:
+		b.Reset()
+		c.sent <- b
+		return b
+	case <- time.After(time.Duration(5) * time.Second):
+		fmt.Println("Warning: txBuffer pool empty!!", len(c.p.ch))
+	  b := <-c.p.ch
+		b.Reset()
+		c.sent <- b
+		return b
+	}
 }
 
 // Put puts the oldest sent buffer back to the shared pool.
