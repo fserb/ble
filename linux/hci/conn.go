@@ -73,7 +73,7 @@ type Conn struct {
 }
 
 func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
-	p := NewPool(1+4+h.bufSize, h.bufCnt-1) // same as NewPool in hci.go
+	p := NewPool(1+4+h.bufSize, h.bufCnt-1+10) // same as NewPool in hci.go
 
 	c := &Conn{
 		hci:   h,
@@ -98,11 +98,6 @@ func newConn(h *HCI, param evt.LEConnectionComplete) *Conn {
 
 		lastActive: time.Now().Unix(),
 	}
-
-	/*
-	fmt.Printf("Connection from % X\n", param.PeerAddress())
-	fmt.Printf("local mac %v\n", c.LocalAddr().String())
-  */
 
 	go func() {
 		timeoutStr := os.Getenv("BLE_IDLE_TIMEOUT")
